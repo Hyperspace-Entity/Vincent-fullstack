@@ -1,3 +1,5 @@
+"""Refactored review queue package."""
+
 from flask import Blueprint
 
 review_queue_bp = Blueprint("review_queue", __name__)

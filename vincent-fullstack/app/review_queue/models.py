@@ -1,3 +1,5 @@
+"""Updated review queue models with security enhancements."""
+
 import re
 import uuid
 from datetime import datetime
@@ -13,10 +15,12 @@ class Template(db.Model):
     __tablename__ = "review_templates"
 
     id = db.Column(db.String(36), primary_key=True, default=_uuid)
-    name = db.Column(db.String(255), nullable=False)
+    name = db.Column(db.String(255), nullable=False, index=True)
     doc_type = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
+    created_by = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     documents = db.relationship("Document", backref="template")
 
@@ -31,7 +35,9 @@ class Template(db.Model):
             "doc_type": self.doc_type,
             "content": self.content,
             "variables": self.variables,
+            "created_by": self.created_by,
             "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
         }
 
 
@@ -43,17 +49,24 @@ class Document(db.Model):
     content = db.Column(db.Text, nullable=False)
     doc_type = db.Column(db.String(100), nullable=False)
     source = db.Column(db.String(100), default="automation")
-    status = db.Column(db.String(10), default="pending")
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(db.String(10), default="pending", index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     reviewer_notes = db.Column(db.Text, nullable=True)
-    risk_level = db.Column(db.String(10), default="low")
+    risk_level = db.Column(db.String(10), default="low", index=True)
     template_id = db.Column(db.String(36), db.ForeignKey("review_templates.id"), nullable=True)
     public_token = db.Column(db.String(64), unique=True, default=_uuid)
 
-    risk_flags = db.relationship("RiskFlag", backref="document", cascade="all, delete-orphan")
-    audit_log = db.relationship("AuditEntry", backref="document", cascade="all, delete-orphan",
-                                 order_by="AuditEntry.timestamp")
+    risk_flags = db.relationship(
+        "RiskFlag", backref="document", cascade="all, delete-orphan", lazy="joined"
+    )
+    audit_log = db.relationship(
+        "AuditEntry",
+        backref="document",
+        cascade="all, delete-orphan",
+        order_by="AuditEntry.timestamp",
+        lazy="joined",
+    )
 
     def to_dict(self):
         return {
@@ -92,7 +105,8 @@ class AuditEntry(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     document_id = db.Column(db.String(36), db.ForeignKey("review_documents.id"), nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
     actor = db.Column(db.String(150), nullable=False)
     action = db.Column(db.String(50), nullable=False)
     detail = db.Column(db.Text, nullable=True)
