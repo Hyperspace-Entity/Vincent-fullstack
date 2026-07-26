@@ -1,3 +1,38 @@
+# Core Framework
 Flask==3.1.3
 Flask-SQLAlchemy==3.1.1
 Flask-CORS==5.0.0
+
+# Security & Authentication
+PyJWT==2.8.1
+Werkzeug==3.1.2
+bcrypt==4.1.2
+python-dotenv==1.0.0
+
+# Input Validation & Serialization
+Pydantic==2.6.4
+Pydantic-settings==2.2.1
+marshmallow==3.21.1
+
+# Rate Limiting & Protection
+Flask-Limiter==3.5.0
+
+# Logging & Monitoring
+python-json-logger==2.0.7
+
+# Development & Testing
+pytest==7.4.4
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+Flask-Testing==0.8.1
+
+# Production Server
+gunicorn==21.2.0
+
+# Code Quality
+black==24.1.1
+flake8==7.0.0
+isort==5.13.2
+
+# API Documentation
+flasky-docs==0.2.0
