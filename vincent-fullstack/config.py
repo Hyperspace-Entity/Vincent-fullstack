@@ -1,12 +1,3 @@
-import os
-
-BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-
-
-class Config:
-    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-this")
-    SQLALCHEMY_DATABASE_URI = os.environ.get(
-        "DATABASE_URL",
-        f"sqlite:///{os.path.join(BASE_DIR, 'instance', 'vincent.db')}",
-    )
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+# Re-export from the canonical location so any external tooling that imports
+# this top-level module gets the same Config as the app package itself.
+from app.config import Config  # noqa: F401
